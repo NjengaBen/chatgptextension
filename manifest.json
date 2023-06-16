@@ -1,0 +1,11 @@
+{
+  "short_name": "limkedIn.io",
+  "name": "auto-linkedIn",
+  "description": "A web extension to auto generate post and responses from chatgpt",
+  "icons": [{}],
+  "start_url": "index.html",
+  "display": "standalone",
+  "background-color": "",
+  "theme": "#0000",
+  "scope": "/"
+}
