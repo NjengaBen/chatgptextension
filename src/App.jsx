@@ -1,23 +1,25 @@
 // import { useState } from "react";
 import { OpenAIApi, Configuration } from "openai";
-import { config } from "dotenv";
-config();
 
 function App() {
-  console.log(process.env.OPENAI_API_KEY);
+  console.log(import.meta.env.VITE_OPENAI_API_KEY);
   const configuration = new Configuration({
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey: import.meta.env.VITE_OPENAI_API_KEY,
   });
 
   const openai = new OpenAIApi(configuration);
-  openai
-    .createChatCompletion({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: "Hello world" }],
-    })
-    .then((res) => {
-      console.log(res);
-    });
+  const chat_completion = async () => {
+    try {
+      const getChat = await openai.createChatCompletion({
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: "Hello world" }],
+      });
+      console.log(getChat);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  chat_completion();
 
   return (
     <div className="w-[320px] h-[540px] bg-white border border-gray-400 rounded-lg">
