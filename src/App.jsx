@@ -14,7 +14,7 @@ function App() {
         model: "gpt-3.5-turbo",
         messages: [{ role: "user", content: "Hello world" }],
       });
-      console.log(getChat);
+      console.log(getChat.data);
     } catch (err) {
       console.log(err);
     }
