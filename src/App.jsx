@@ -1,25 +1,47 @@
-// import { useState } from "react";
-import { OpenAIApi, Configuration } from "openai";
+import { useState } from "react";
 
 function App() {
-  console.log(import.meta.env.VITE_OPENAI_API_KEY);
-  const configuration = new Configuration({
-    apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  });
+  const [response, setResponse] = useState("");
+  const [prompt, setPrompt] = useState("");
 
-  const openai = new OpenAIApi(configuration);
-  const chat_completion = async () => {
+  const handlePromptChange = (event) => {
+    setPrompt(event.target.value);
+  };
+
+  const handleSendPrompt = async () => {
     try {
-      const getChat = await openai.createChatCompletion({
-        model: "gpt-3.5-turbo",
-        messages: [{ role: "user", content: "Hello world" }],
-      });
-      console.log(getChat.data);
-    } catch (err) {
-      console.log(err);
+      const response = await fetch(
+        "https://api.openai.com/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+          },
+          body: JSON.stringify({
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You are ChatGPT, a large language model trained by OpenAI.",
+              },
+              {
+                role: "user",
+                content: prompt,
+              },
+            ],
+            model: "gpt-3.5-turbo",
+          }),
+        }
+      );
+      const json = await response.json();
+      console.log(json);
+      const responseData = json.choices[0].message.content;
+      setResponse(responseData);
+    } catch (error) {
+      console.error("Error sending prompt:", error);
     }
   };
-  chat_completion();
 
   return (
     <div className="w-[320px] h-[540px] bg-white border border-gray-400 rounded-lg">
@@ -28,24 +50,32 @@ function App() {
       </h1>
       <div className="flex flex-col gap-3 m-3">
         <textarea
-          name=""
-          id=""
+          name="prompt"
+          id="prompt"
+          value={prompt}
           cols="30"
           rows="10"
           className="bg-gray-100 w-full"
-        ></textarea>
-        <button className="bg-green-500 text-white text-2xl px-1 py-3">
+          onChange={handlePromptChange}
+        />
+        <button
+          onClick={handleSendPrompt}
+          className="bg-green-500 text-white text-2xl px-1 py-3"
+        >
           Generate
         </button>
       </div>
       <div className="m-3">
         <textarea
-          name=""
-          id=""
+          name="response"
+          id="response"
+          value={response}
+          onChange={() => {}}
+          readOnly
           cols="30"
           rows="10"
           className="bg-gray-100 w-full"
-        ></textarea>
+        />
       </div>
     </div>
   );
