@@ -1,43 +1,55 @@
 import { useState } from "react";
 
 function App() {
-  const [response, setResponse] = useState("");
+  const [responses, setResponses] = useState([]);
   const [prompt, setPrompt] = useState("");
+  const [selectedTone, setSelectedTone] = useState("");
 
   const handlePromptChange = (event) => {
     setPrompt(event.target.value);
   };
 
+  const handleToneChange = (event) => {
+    setSelectedTone(event.target.value);
+  };
+
   const handleSendPrompt = async () => {
     try {
-      const response = await fetch(
-        "https://api.openai.com/v1/chat/completions",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
-          },
-          body: JSON.stringify({
-            messages: [
-              {
-                role: "system",
-                content:
-                  "You are ChatGPT, a large language model trained by OpenAI.",
+      const numResponses = 3;
+      const responsePromises = Array.from(
+        { length: numResponses },
+        async () => {
+          const response = await fetch(
+            "https://api.openai.com/v1/chat/completions",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
               },
-              {
-                role: "user",
-                content: prompt,
-              },
-            ],
-            model: "gpt-3.5-turbo",
-          }),
+              body: JSON.stringify({
+                messages: [
+                  {
+                    role: "system",
+                    content: `You are ChatGPT, a large language model trained by OpenAI. Please respond in a ${setSelectedTone} tone`,
+                  },
+                  {
+                    role: "user",
+                    content: prompt,
+                  },
+                ],
+                model: "gpt-3.5-turbo",
+              }),
+            }
+          );
+          const json = await response.json();
+          console.log(json.choices[0].message.content);
+          return json.choices[0].message.content;
         }
       );
-      const json = await response.json();
-      console.log(json);
-      const responseData = json.choices[0].message.content;
-      setResponse(responseData);
+
+      const generatedResponses = await Promise.all(responsePromises);
+      setResponses(generatedResponses);
     } catch (error) {
       console.error("Error sending prompt:", error);
     }
@@ -58,6 +70,17 @@ function App() {
           className="bg-gray-100 w-full"
           onChange={handlePromptChange}
         />
+        <select
+          name="tone"
+          id="tone"
+          value={selectedTone}
+          onChange={handleToneChange}
+        >
+          <option value="">Choose a tone</option>
+          <option value="formal">Formal</option>
+          <option value="friendly">Friendly</option>
+          <option value="professional">Professional</option>
+        </select>
         <button
           onClick={handleSendPrompt}
           className="bg-green-500 text-white text-2xl px-1 py-3"
@@ -66,16 +89,20 @@ function App() {
         </button>
       </div>
       <div className="m-3">
-        <textarea
-          name="response"
-          id="response"
-          value={response}
-          onChange={() => {}}
-          readOnly
-          cols="30"
-          rows="10"
-          className="bg-gray-100 w-full"
-        />
+        {responses.map((response, index) => (
+          <div key={index}>
+            <textarea
+              name="response"
+              id="response"
+              value={response}
+              onChange={() => {}}
+              readOnly
+              cols="30"
+              rows="10"
+              className="bg-gray-100 w-full"
+            />
+          </div>
+        ))}
       </div>
     </div>
   );
